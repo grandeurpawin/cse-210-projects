@@ -1,4 +1,3 @@
-// Extra added feature: Mood tracking for journal entries
 using System;
 using System.Collections.Generic;
 
