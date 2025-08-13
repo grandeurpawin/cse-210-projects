@@ -20,7 +20,6 @@ public class ListingActivity : Activity
 {
     DisplayStartingMessage();
 
-   
     List<string> sessionPrompts = new List<string>(_prompts);
     Random rand = new();
     int index = rand.Next(sessionPrompts.Count);
