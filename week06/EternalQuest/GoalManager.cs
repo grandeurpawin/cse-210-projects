@@ -69,6 +69,8 @@ public class GoalManager
         Console.WriteLine("1. Simple Goal");
         Console.WriteLine("2. Eternal Goal");
         Console.WriteLine("3. Checklist Goal");
+        Console.WriteLine("4. Progressive Goal");
+        Console.WriteLine("5. Negative Goal");
         Console.Write("Which type of goal would you like to create? ");
         string type = Console.ReadLine();
 
@@ -94,6 +96,19 @@ public class GoalManager
                 int bonus = int.Parse(Console.ReadLine());
                 _goals.Add(new ChecklistGoal(name, desc, points, target, bonus));
                 break;
+                case "4":
+                Console.Write("What is the target amount to complete this goal? ");
+                int progTarget = int.Parse(Console.ReadLine());
+                Console.Write("What is the bonus for completing it? ");
+                int progBonus = int.Parse(Console.ReadLine());
+                _goals.Add(new ProgressiveGoal(name, desc, points, progTarget, progBonus));
+                break;
+
+            case "5":
+                Console.Write("How many points will be deducted for each occurrence? ");
+                int penalty = int.Parse(Console.ReadLine());
+                _goals.Add(new NegativeGoal(name, desc, penalty));
+                break;
             default:
                 Console.WriteLine("Invalid type.");
                 break;
@@ -105,18 +120,34 @@ public class GoalManager
         ListGoalDetails();
         Console.Write("Which goal did you accomplish? ");
         int index = int.Parse(Console.ReadLine()) - 1;
+    
         if (index >= 0 && index < _goals.Count)
         {
             Goal goal = _goals[index];
             goal.RecordEvent();
-            _score += goal.GetPoints();
-
-            if (goal is ChecklistGoal checklist && checklist.IsComplete())
+    
+            if (goal is ProgressiveGoal pg)
             {
-                _score += checklist.GetBonus();
+                _score += pg.GetPoints();
+                if (pg.IsComplete())
+                {
+                    _score += pg.GetBonus();
+                }
             }
-
-            Console.WriteLine($"Congratulations! You have earned {goal.GetPoints()} points!\nYou now have {_score} points.");
+            else if (goal is NegativeGoal ng)
+            {
+                _score -= ng.GetPenalty();  // ✅ Penalty applied correctly
+            }
+            else
+            {
+                _score += goal.GetPoints();
+                if (goal is ChecklistGoal checklist && checklist.IsComplete())
+                {
+                    _score += checklist.GetBonus();
+                }
+            }
+    
+            Console.WriteLine($"You now have {_score} points.");
         }
         else
         {
@@ -162,22 +193,35 @@ public class GoalManager
         {
             string[] parts = lines[i].Split('|');
             string type = parts[0];
-            switch (type)
-            {
-                case "SimpleGoal":
-                    var sg = new SimpleGoal(parts[1], parts[2], int.Parse(parts[3]));
-                    if (bool.Parse(parts[4])) sg.RecordEvent();
-                    _goals.Add(sg);
-                    break;
-                case "EternalGoal":
-                    _goals.Add(new EternalGoal(parts[1], parts[2], int.Parse(parts[3])));
-                    break;
-                case "ChecklistGoal":
-                    var cg = new ChecklistGoal(parts[1], parts[2], int.Parse(parts[3]), int.Parse(parts[4]), int.Parse(parts[5]));
-                    typeof(ChecklistGoal).GetField("_amountCompleted", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                        .SetValue(cg, int.Parse(parts[6]));
-                    _goals.Add(cg);
-                    break;
+                switch (type)
+                {
+                    case "SimpleGoal":
+                        var sg = new SimpleGoal(parts[1], parts[2], int.Parse(parts[3]));
+                        if (bool.Parse(parts[4])) sg.RecordEvent();
+                        _goals.Add(sg);
+                        break;
+                    case "EternalGoal":
+                        _goals.Add(new EternalGoal(parts[1], parts[2], int.Parse(parts[3])));
+                        break;
+                    case "ChecklistGoal":
+                        var cg = new ChecklistGoal(parts[1], parts[2], int.Parse(parts[3]), int.Parse(parts[4]), int.Parse(parts[5]));
+                        typeof(ChecklistGoal).GetField("_amountCompleted", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                            .SetValue(cg, int.Parse(parts[6]));
+                        _goals.Add(cg);
+                        break;
+                    case "ProgressiveGoal":
+                        var pg = new ProgressiveGoal(parts[1], parts[2], int.Parse(parts[3]), int.Parse(parts[4]), int.Parse(parts[5]));
+                        typeof(ProgressiveGoal).GetField("_currentProgress", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                            .SetValue(pg, int.Parse(parts[6]));
+                        _goals.Add(pg);
+                        break;
+
+                    case "NegativeGoal":
+                        var ng = new NegativeGoal(parts[1], parts[2], int.Parse(parts[3]));
+                        typeof(NegativeGoal).GetField("_occurrences", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                            .SetValue(ng, int.Parse(parts[4]));
+                        _goals.Add(ng);
+                        break;
             }
         }
     }
