@@ -1,0 +1,4 @@
+0
+SimpleGoal|sdfgasd|serfsd|200|False
+EternalGoal|dfasdf|dfgadsf|234
+ChecklistGoal|fasdfsa|sdafasd|23|1|234|0

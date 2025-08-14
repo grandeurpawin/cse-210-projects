@@ -1,0 +1,4 @@
+0
+SimpleGoal|simple ted|dggdd|300|False
+EternalGoal|jsdofjlasd|gsdfgsd|345
+ChecklistGoal|asdfasd|sdfasdf|34|2|345|0
